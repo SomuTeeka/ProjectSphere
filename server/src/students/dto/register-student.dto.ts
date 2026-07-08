@@ -6,6 +6,8 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  IsOptional,
+  IsArray,
 } from "class-validator";
 import { PASSWORD_POLICY, PASSWORD_POLICY_MESSAGE } from "../password-policy";
 
@@ -47,6 +49,27 @@ export class RegisterStudentDto {
   @IsUrl({ require_protocol: true })
   @MaxLength(240)
   githubProfile!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  username?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  skills?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  department?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  degree?: string;
 
   @IsString()
   @MinLength(8)

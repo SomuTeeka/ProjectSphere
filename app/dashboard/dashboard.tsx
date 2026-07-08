@@ -6,6 +6,7 @@ import {
   LogOut,
   Pencil,
   Plus,
+  Search,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -69,6 +70,7 @@ export function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [form, setForm] = useState<ProjectFormState>(emptyForm);
+  const [topbarSearch, setTopbarSearch] = useState("");
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(
     null,
   );
@@ -124,6 +126,12 @@ export function Dashboard() {
   function logout() {
     localStorage.removeItem("projectsphere.student");
     router.replace("/login");
+  }
+
+  function submitTopbarSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = topbarSearch.trim();
+    router.push(query ? `/discover?q=${encodeURIComponent(query)}` : "/discover");
   }
 
   function updateField(field: keyof ProjectFormState, value: string) {
@@ -263,6 +271,15 @@ export function Dashboard() {
         </div>
 
         <div className="topbar-actions">
+          <form className="topbar-search" onSubmit={submitTopbarSearch}>
+            <Search aria-hidden="true" size={17} />
+            <input
+              aria-label="Search students"
+              placeholder="Search students, skills, projects"
+              value={topbarSearch}
+              onChange={(event) => setTopbarSearch(event.target.value)}
+            />
+          </form>
           <button
             className="profile-icon-button"
             type="button"

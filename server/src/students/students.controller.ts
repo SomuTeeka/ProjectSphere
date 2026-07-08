@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Query } from "@nestjs/common";
 import { LoginStudentDto } from "./dto/login-student.dto";
 import { RegisterStudentDto } from "./dto/register-student.dto";
 import { UpdateStudentDto } from "./dto/update-student.dto";
@@ -16,6 +16,23 @@ export class StudentsController {
   @Post("login")
   login(@Body() dto: LoginStudentDto) {
     return this.studentsService.login(dto);
+  }
+
+  @Get("search")
+  search(
+    @Query("q") query?: string,
+    @Query("college") college?: string,
+    @Query("department") department?: string,
+    @Query("degree") degree?: string,
+    @Query("skills") skills?: string,
+  ) {
+    return this.studentsService.search({
+      query,
+      college,
+      department,
+      degree,
+      skills,
+    });
   }
 
   @Get(":id")

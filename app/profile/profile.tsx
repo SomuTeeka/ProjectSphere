@@ -20,8 +20,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
 type Student = {
   id: string;
   name: string;
+  username: string | null;
   institutionName: string;
   course: string;
+  skills: string[];
+  department: string | null;
+  degree: string | null;
   year: string;
   rollNumber: string;
   email: string;
@@ -43,6 +47,13 @@ const profileFields = [
     autoComplete: "name",
   },
   {
+    label: "Username",
+    name: "username",
+    type: "text",
+    icon: UserRound,
+    autoComplete: "username",
+  },
+  {
     label: "Institution Name",
     name: "institutionName",
     type: "text",
@@ -52,6 +63,27 @@ const profileFields = [
   {
     label: "Course",
     name: "course",
+    type: "text",
+    icon: GraduationCap,
+    autoComplete: "off",
+  },
+  {
+    label: "Department",
+    name: "department",
+    type: "text",
+    icon: Building2,
+    autoComplete: "off",
+  },
+  {
+    label: "Degree",
+    name: "degree",
+    type: "text",
+    icon: GraduationCap,
+    autoComplete: "off",
+  },
+  {
+    label: "Skills",
+    name: "skills",
     type: "text",
     icon: GraduationCap,
     autoComplete: "off",
@@ -98,8 +130,12 @@ type ProfileForm = Record<ProfileField["name"], string>;
 
 const emptyProfile: ProfileForm = {
   name: "",
+  username: "",
   institutionName: "",
   course: "",
+  skills: "",
+  department: "",
+  degree: "",
   year: "",
   rollNumber: "",
   email: "",
@@ -179,7 +215,10 @@ export function Profile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          skills: splitList(form.skills),
+        }),
       });
       const data = await response.json().catch(() => ({}));
 
@@ -265,14 +304,25 @@ export function Profile() {
 function toProfileForm(student: Student): ProfileForm {
   return {
     name: student.name ?? "",
+    username: student.username ?? "",
     institutionName: student.institutionName ?? "",
     course: student.course ?? "",
+    skills: student.skills?.join(", ") ?? "",
+    department: student.department ?? "",
+    degree: student.degree ?? "",
     year: student.year ?? "",
     rollNumber: student.rollNumber ?? "",
     email: student.email ?? "",
     contactNumber: student.contactNumber ?? "",
     githubProfile: student.githubProfile ?? "",
   };
+}
+
+function splitList(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function getApiMessage(data: unknown, fallback: string) {

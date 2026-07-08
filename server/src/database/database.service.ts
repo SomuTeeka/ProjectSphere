@@ -37,6 +37,29 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     `);
 
     await this.query(`
+      ALTER TABLE students
+        ADD COLUMN IF NOT EXISTS username TEXT,
+        ADD COLUMN IF NOT EXISTS skills JSONB NOT NULL DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS department TEXT,
+        ADD COLUMN IF NOT EXISTS degree TEXT;
+    `);
+
+    await this.query(`
+      UPDATE students
+      SET
+        username = COALESCE(username, split_part(email, '@', 1)),
+        department = COALESCE(department, course),
+        degree = COALESCE(degree, course)
+      WHERE username IS NULL OR department IS NULL OR degree IS NULL;
+    `);
+
+    await this.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS students_username_unique
+      ON students (username)
+      WHERE username IS NOT NULL;
+    `);
+
+    await this.query(`
       CREATE TABLE IF NOT EXISTS project (
         id BIGSERIAL PRIMARY KEY,
         student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,

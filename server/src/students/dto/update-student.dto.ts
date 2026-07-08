@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -53,4 +54,28 @@ export class UpdateStudentDto {
   @IsUrl({ require_protocol: true })
   @MaxLength(240)
   githubProfile?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(80)
+  username?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  skills?: string[];
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  department?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  degree?: string;
 }
