@@ -3,16 +3,11 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Code2,
-  ExternalLink,
-  FileText,
-  Image,
   LogOut,
   Pencil,
   Plus,
   Trash2,
   UserRound,
-  UsersRound,
-  Video,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -72,7 +67,6 @@ export function Dashboard() {
   const router = useRouter();
   const [student, setStudent] = useState<Student | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [form, setForm] = useState<ProjectFormState>(emptyForm);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(
@@ -141,7 +135,6 @@ export function Dashboard() {
 
   function startEdit(project: Project) {
     setEditingProject(project);
-    setSelectedProject(project);
     setForm({
       title: project.title,
       description: project.description,
@@ -242,7 +235,6 @@ export function Dashboard() {
         type: "success",
         message: data.message ?? "Project deleted successfully.",
       });
-      setSelectedProject((current) => (current?.id === project.id ? null : current));
       await loadProjects(student.id);
     } catch (error) {
       setStatus({
@@ -348,7 +340,7 @@ export function Dashboard() {
                     </div>
                   </div>
                   <div className="project-actions">
-                    <button type="button" onClick={() => setSelectedProject(project)}>
+                    <button type="button" onClick={() => router.push(`/projects/${project.id}`)}>
                       View
                     </button>
                     <button type="button" onClick={() => startEdit(project)} title="Edit">
@@ -438,95 +430,7 @@ export function Dashboard() {
           </form>
         </aside>
       </section>
-
-      {selectedProject ? <ProjectDetails project={selectedProject} /> : null}
     </main>
-  );
-}
-
-function ProjectDetails({ project }: { project: Project }) {
-  return (
-    <section className="project-details" aria-label="Project details">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow dashboard-eyebrow">Project details</p>
-          <h2>{project.title}</h2>
-        </div>
-      </div>
-      <p>{project.description}</p>
-      <ResourceGroup icon={Code2} title="Technologies" values={project.technologiesUsed} />
-      <ResourceGroup icon={UsersRound} title="Team members" values={project.teamMembers} />
-      <ResourceGroup icon={Image} title="Images" values={project.images} linkValues />
-      <ResourceGroup icon={Video} title="Videos" values={project.videos} linkValues />
-      <LinkGroup icon={FileText} title="Documentation" values={project.documentation} />
-      <LinkGroup icon={ExternalLink} title="External links" values={project.externalLinks} />
-    </section>
-  );
-}
-
-function ResourceGroup({
-  icon: Icon,
-  title,
-  values,
-  linkValues = false,
-}: {
-  icon: typeof Code2;
-  title: string;
-  values: string[];
-  linkValues?: boolean;
-}) {
-  if (values.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="resource-group">
-      <h3>
-        <Icon aria-hidden="true" size={18} />
-        {title}
-      </h3>
-      <div className="tag-row">
-        {values.map((value) =>
-          linkValues ? (
-            <a href={value} key={value} rel="noreferrer" target="_blank">
-              {value}
-            </a>
-          ) : (
-            <span key={value}>{value}</span>
-          ),
-        )}
-      </div>
-    </div>
-  );
-}
-
-function LinkGroup({
-  icon: Icon,
-  title,
-  values,
-}: {
-  icon: typeof Code2;
-  title: string;
-  values: LinkItem[];
-}) {
-  if (values.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="resource-group">
-      <h3>
-        <Icon aria-hidden="true" size={18} />
-        {title}
-      </h3>
-      <div className="tag-row">
-        {values.map((value) => (
-          <a href={value.url} key={`${value.label}-${value.url}`} rel="noreferrer" target="_blank">
-            {value.label}
-          </a>
-        ))}
-      </div>
-    </div>
   );
 }
 
