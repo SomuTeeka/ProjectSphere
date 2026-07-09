@@ -430,6 +430,41 @@ textarea {
   color: #b42318;
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+}
+
+.auth0-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.15rem;
+  border: 1px solid #cfd8e5;
+  border-radius: 0.45rem;
+  padding: 0.85rem 1rem;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.auth0-button:hover {
+  border-color: rgba(4, 127, 122, 0.36);
+  color: var(--teal-dark);
+}
+
 .login-card {
   max-width: 31rem;
 }

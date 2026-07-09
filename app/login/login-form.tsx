@@ -133,6 +133,14 @@ export function LoginForm() {
         {isSubmitting ? "Logging in..." : "Log in"}
         <ArrowRight aria-hidden="true" size={18} strokeWidth={2.4} />
       </button>
+
+      <div className="auth-divider">
+        <span>or</span>
+      </div>
+
+      <a className="auth0-button" href="/auth/login?returnTo=/auth/sync">
+        Continue with Auth0
+      </a>
     </form>
   );
 }

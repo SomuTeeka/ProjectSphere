@@ -125,7 +125,7 @@ export function Dashboard() {
 
   function logout() {
     localStorage.removeItem("projectsphere.student");
-    router.replace("/login");
+    window.location.href = "/auth/logout";
   }
 
   function submitTopbarSearch(event: FormEvent<HTMLFormElement>) {

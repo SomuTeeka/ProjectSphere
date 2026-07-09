@@ -274,6 +274,14 @@ export function RegisterForm() {
         {isSubmitting ? "Creating account..." : "Create student account"}
         <ArrowRight aria-hidden="true" size={18} strokeWidth={2.4} />
       </button>
+
+      <div className="auth-divider">
+        <span>or</span>
+      </div>
+
+      <a className="auth0-button" href="/auth/login?screen_hint=signup&returnTo=/auth/sync">
+        Sign up with Auth0
+      </a>
     </form>
   );
 }

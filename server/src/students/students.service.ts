@@ -10,9 +10,11 @@ import { DatabaseService } from "../database/database.service";
 import { LoginStudentDto } from "./dto/login-student.dto";
 import { RegisterStudentDto } from "./dto/register-student.dto";
 import { UpdateStudentDto } from "./dto/update-student.dto";
+import { Auth0SyncStudentDto } from "./dto/auth0-sync-student.dto";
 
 type StudentRow = {
   id: string;
+  auth0_sub: string | null;
   name: string;
   username: string | null;
   institution_name: string;
@@ -58,6 +60,7 @@ export class StudentsService {
       const result = await this.database.query<StudentRow>(
         `
           INSERT INTO students (
+            auth0_sub,
             name,
             username,
             institution_name,
@@ -72,10 +75,11 @@ export class StudentsService {
             degree,
             password_hash
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13)
-          RETURNING id, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at;
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12, $13, $14)
+          RETURNING id, auth0_sub, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at;
         `,
         [
+          null,
           dto.name.trim(),
           normalizeUsername(dto.username, email),
           dto.institutionName.trim(),
@@ -109,7 +113,7 @@ export class StudentsService {
     const email = dto.email.trim().toLowerCase();
     const result = await this.database.query<StudentRow>(
       `
-        SELECT id, name, institution_name, course, year, roll_number, email, contact_number, github_profile, password_hash, created_at
+        SELECT id, auth0_sub, name, institution_name, course, year, roll_number, email, contact_number, github_profile, password_hash, created_at
         , username, skills, department, degree
         FROM students
         WHERE email = $1
@@ -133,6 +137,88 @@ export class StudentsService {
     return {
       message: "Login successful.",
       student: this.toPublicStudent(student),
+    };
+  }
+
+  async auth0Sync(dto: Auth0SyncStudentDto) {
+    const email = dto.email.trim().toLowerCase();
+    const username = normalizeUsername(dto.nickname, email);
+
+    const existing = await this.database.query<StudentRow>(
+      `
+        SELECT id, auth0_sub, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at
+        FROM students
+        WHERE auth0_sub = $1 OR email = $2
+        ORDER BY CASE WHEN auth0_sub = $1 THEN 0 ELSE 1 END
+        LIMIT 1;
+      `,
+      [dto.auth0Sub, email],
+    );
+
+    if (existing.rows[0]) {
+      const result = await this.database.query<StudentRow>(
+        `
+          UPDATE students
+          SET
+            auth0_sub = $1,
+            name = COALESCE(NULLIF(name, ''), $2),
+            username = COALESCE(username, $3),
+            email = $4,
+            updated_at = NOW()
+          WHERE id = $5
+          RETURNING id, auth0_sub, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at;
+        `,
+        [dto.auth0Sub, dto.name.trim(), username, email, existing.rows[0].id],
+      );
+
+      return {
+        message: "Auth0 sign in successful.",
+        student: this.toPublicStudent(result.rows[0]),
+      };
+    }
+
+    const passwordHash = await bcrypt.hash(dto.auth0Sub, 12);
+    const result = await this.database.query<StudentRow>(
+      `
+        INSERT INTO students (
+          auth0_sub,
+          name,
+          username,
+          institution_name,
+          course,
+          year,
+          roll_number,
+          email,
+          contact_number,
+          github_profile,
+          skills,
+          department,
+          degree,
+          password_hash
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, '[]'::jsonb, $11, $12, $13)
+        RETURNING id, auth0_sub, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at;
+      `,
+      [
+        dto.auth0Sub,
+        dto.name.trim(),
+        username,
+        "Not provided",
+        "Not provided",
+        "Not provided",
+        `AUTH0-${Date.now()}`,
+        email,
+        "Not provided",
+        "https://github.com",
+        "Not provided",
+        "Not provided",
+        passwordHash,
+      ],
+    );
+
+    return {
+      message: "Auth0 sign in successful.",
+      student: this.toPublicStudent(result.rows[0]),
     };
   }
 
@@ -168,7 +254,7 @@ export class StudentsService {
             degree = COALESCE($12, degree),
             updated_at = NOW()
           WHERE id = $13
-          RETURNING id, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at;
+          RETURNING id, auth0_sub, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at;
         `,
         [
           dto.name?.trim(),
@@ -220,6 +306,7 @@ export class StudentsService {
       `
         SELECT
           s.id,
+          s.auth0_sub,
           s.name,
           s.username,
           s.institution_name,
@@ -284,7 +371,7 @@ export class StudentsService {
   private async findStudent(id: string) {
     const result = await this.database.query<StudentRow>(
       `
-        SELECT id, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at
+        SELECT id, auth0_sub, name, username, institution_name, course, year, roll_number, email, contact_number, github_profile, skills, department, degree, password_hash, created_at
         FROM students
         WHERE id = $1
         LIMIT 1;

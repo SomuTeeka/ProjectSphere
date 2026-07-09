@@ -38,6 +38,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     await this.query(`
       ALTER TABLE students
+        ADD COLUMN IF NOT EXISTS auth0_sub TEXT,
         ADD COLUMN IF NOT EXISTS username TEXT,
         ADD COLUMN IF NOT EXISTS skills JSONB NOT NULL DEFAULT '[]'::jsonb,
         ADD COLUMN IF NOT EXISTS department TEXT,
@@ -57,6 +58,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       CREATE UNIQUE INDEX IF NOT EXISTS students_username_unique
       ON students (username)
       WHERE username IS NOT NULL;
+    `);
+
+    await this.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS students_auth0_sub_unique
+      ON students (auth0_sub)
+      WHERE auth0_sub IS NOT NULL;
     `);
 
     await this.query(`
