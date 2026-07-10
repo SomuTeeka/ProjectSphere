@@ -6,14 +6,17 @@ import {
   Code2,
   ExternalLink,
   FileText,
+  Heart,
   Image,
   Link as LinkIcon,
   UsersRound,
   Video,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { AppHeader } from "../../components/app-header";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
+const FAVORITE_PROJECTS_KEY = "projectsphere.favoriteProjects";
 
 type LinkItem = {
   label: string;
@@ -40,6 +43,7 @@ export function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
+  const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(
     null,
   );
@@ -71,25 +75,30 @@ export function ProjectDetailPage() {
         return;
       }
 
+      setFavoriteProjects(readStoredIds(FAVORITE_PROJECTS_KEY));
       void loadProject(params.id);
     });
   }, [params.id, router]);
 
+  function toggleFavoriteProject(projectId: string) {
+    const nextFavorites = favoriteProjects.includes(projectId)
+      ? favoriteProjects.filter((id) => id !== projectId)
+      : [...favoriteProjects, projectId];
+
+    setFavoriteProjects(nextFavorites);
+    localStorage.setItem(FAVORITE_PROJECTS_KEY, JSON.stringify(nextFavorites));
+  }
+
   return (
     <main className="dashboard-shell">
-      <header className="dashboard-topbar">
-        <div className="brand dashboard-brand">
-          <span className="brand-mark dashboard-brand-mark">
-            <Code2 aria-hidden="true" size={24} strokeWidth={2.5} />
-          </span>
-          <span>ProjectSphere</span>
-        </div>
-
-        <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
-          <ArrowLeft aria-hidden="true" size={18} />
-          Dashboard
-        </button>
-      </header>
+      <AppHeader
+        below={
+          <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
+            <ArrowLeft aria-hidden="true" size={18} />
+            Dashboard
+          </button>
+        }
+      />
 
       {status ? (
         <section className="project-detail-shell">
@@ -104,6 +113,14 @@ export function ProjectDetailPage() {
               <p className="eyebrow dashboard-eyebrow">Project detail</p>
               <h1>{project.title}</h1>
               <p>{project.description}</p>
+              <button
+                className={favoriteProjects.includes(project.id) ? "favorite-wide-button active" : "favorite-wide-button"}
+                type="button"
+                onClick={() => toggleFavoriteProject(project.id)}
+              >
+                <Heart aria-hidden="true" size={18} />
+                {favoriteProjects.includes(project.id) ? "Saved project" : "Save project"}
+              </button>
             </div>
             <dl className="project-meta">
               <div>
@@ -141,6 +158,15 @@ export function ProjectDetailPage() {
       ) : null}
     </main>
   );
+}
+
+function readStoredIds(key: string) {
+  try {
+    const storedValue = localStorage.getItem(key);
+    return storedValue ? (JSON.parse(storedValue) as string[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 function ResourcePanel({

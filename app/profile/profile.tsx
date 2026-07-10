@@ -14,6 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { AppHeader } from "../components/app-header";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
 
@@ -243,12 +244,14 @@ export function Profile() {
 
   return (
     <main className="dashboard-shell">
-      <header className="dashboard-topbar">
-        <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
-          <ArrowLeft aria-hidden="true" size={18} />
-          Dashboard
-        </button>
-      </header>
+      <AppHeader
+        below={
+          <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
+            <ArrowLeft aria-hidden="true" size={18} />
+            Dashboard
+          </button>
+        }
+      />
 
       <section className="profile-panel" aria-labelledby="profile-title">
         <div className="profile-heading">

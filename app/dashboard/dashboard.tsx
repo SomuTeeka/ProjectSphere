@@ -2,17 +2,16 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
-  Code2,
-  LogOut,
+  Heart,
   Pencil,
   Plus,
-  Search,
   Trash2,
-  UserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { AppHeader } from "../components/app-header";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
+const FAVORITE_PROJECTS_KEY = "projectsphere.favoriteProjects";
 
 type Student = {
   id: string;
@@ -68,9 +67,9 @@ export function Dashboard() {
   const router = useRouter();
   const [student, setStudent] = useState<Student | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [form, setForm] = useState<ProjectFormState>(emptyForm);
-  const [topbarSearch, setTopbarSearch] = useState("");
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(
     null,
   );
@@ -88,6 +87,7 @@ export function Dashboard() {
       try {
         const parsedStudent = JSON.parse(storedStudent) as Student;
         setStudent(parsedStudent);
+        setFavoriteProjects(readStoredIds(FAVORITE_PROJECTS_KEY));
         void loadProjects(parsedStudent.id);
       } catch {
         localStorage.removeItem("projectsphere.student");
@@ -123,15 +123,13 @@ export function Dashboard() {
     }
   }
 
-  function logout() {
-    localStorage.removeItem("projectsphere.student");
-    window.location.href = "/auth/logout";
-  }
+  function toggleFavoriteProject(projectId: string) {
+    const nextFavorites = favoriteProjects.includes(projectId)
+      ? favoriteProjects.filter((id) => id !== projectId)
+      : [...favoriteProjects, projectId];
 
-  function submitTopbarSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const query = topbarSearch.trim();
-    router.push(query ? `/discover?q=${encodeURIComponent(query)}` : "/discover");
+    setFavoriteProjects(nextFavorites);
+    localStorage.setItem(FAVORITE_PROJECTS_KEY, JSON.stringify(nextFavorites));
   }
 
   function updateField(field: keyof ProjectFormState, value: string) {
@@ -262,39 +260,7 @@ export function Dashboard() {
 
   return (
     <main className="dashboard-shell">
-      <header className="dashboard-topbar">
-        <div className="brand dashboard-brand">
-          <span className="brand-mark dashboard-brand-mark">
-            <Code2 aria-hidden="true" size={24} strokeWidth={2.5} />
-          </span>
-          <span>ProjectSphere</span>
-        </div>
-
-        <div className="topbar-actions">
-          <form className="topbar-search" onSubmit={submitTopbarSearch}>
-            <Search aria-hidden="true" size={17} />
-            <input
-              aria-label="Search students"
-              placeholder="Search students, skills, projects"
-              value={topbarSearch}
-              onChange={(event) => setTopbarSearch(event.target.value)}
-            />
-          </form>
-          <button
-            className="profile-icon-button"
-            type="button"
-            onClick={() => router.push("/profile")}
-            title="Open profile"
-            aria-label="Open profile"
-          >
-            <UserRound aria-hidden="true" size={20} />
-          </button>
-          <button className="icon-text-button" type="button" onClick={logout}>
-            <LogOut aria-hidden="true" size={18} />
-            Logout
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <section className="dashboard-hero">
         <div>
@@ -357,6 +323,18 @@ export function Dashboard() {
                     </div>
                   </div>
                   <div className="project-actions">
+                    <button
+                      type="button"
+                      onClick={() => toggleFavoriteProject(project.id)}
+                      title="Save favorite project"
+                      aria-label="Save favorite project"
+                    >
+                      <Heart
+                        aria-hidden="true"
+                        className={favoriteProjects.includes(project.id) ? "favorite-icon-active" : ""}
+                        size={16}
+                      />
+                    </button>
                     <button type="button" onClick={() => router.push(`/projects/${project.id}`)}>
                       View
                     </button>
@@ -449,6 +427,15 @@ export function Dashboard() {
       </section>
     </main>
   );
+}
+
+function readStoredIds(key: string) {
+  try {
+    const storedValue = localStorage.getItem(key);
+    return storedValue ? (JSON.parse(storedValue) as string[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 function splitList(value: string) {

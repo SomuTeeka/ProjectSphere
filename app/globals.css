@@ -502,7 +502,16 @@ textarea {
 .topbar-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.65rem;
+}
+
+.below-topbar {
+  display: flex;
+  max-width: 82rem;
+  margin: 0 auto 0.5rem;
+  padding-bottom: 0.35rem;
 }
 
 .topbar-search {

@@ -4,16 +4,15 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Building2,
-  Code2,
   GraduationCap,
   Heart,
-  Mail,
   Search,
   Sparkles,
   UserRound,
   UsersRound,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AppHeader } from "../components/app-header";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
 const FAVORITES_KEY = "projectsphere.favoriteProfiles";
@@ -145,18 +144,14 @@ export function Discover() {
 
   return (
     <main className="dashboard-shell">
-      <header className="dashboard-topbar">
-        <div className="brand dashboard-brand">
-          <span className="brand-mark dashboard-brand-mark">
-            <Code2 aria-hidden="true" size={24} strokeWidth={2.5} />
-          </span>
-          <span>ProjectSphere</span>
-        </div>
-        <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
-          <ArrowLeft aria-hidden="true" size={18} />
-          Dashboard
-        </button>
-      </header>
+      <AppHeader
+        below={
+          <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
+            <ArrowLeft aria-hidden="true" size={18} />
+            Dashboard
+          </button>
+        }
+      />
 
       <section className="discover-hero">
         <div>
@@ -298,10 +293,6 @@ export function Discover() {
                   <button type="button" onClick={() => router.push(`/students/${student.id}`)}>
                     Open profile
                   </button>
-                  <a href={`mailto:${student.email}`}>
-                    <Mail aria-hidden="true" size={16} />
-                    Connect
-                  </a>
                 </div>
               </article>
             ))

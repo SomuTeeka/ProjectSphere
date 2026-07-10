@@ -12,6 +12,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { AppHeader } from "../../components/app-header";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
 
@@ -82,18 +83,14 @@ export function StudentProfilePage() {
 
   return (
     <main className="dashboard-shell">
-      <header className="dashboard-topbar">
-        <div className="brand dashboard-brand">
-          <span className="brand-mark dashboard-brand-mark">
-            <Code2 aria-hidden="true" size={24} strokeWidth={2.5} />
-          </span>
-          <span>ProjectSphere</span>
-        </div>
-        <button className="icon-text-button" type="button" onClick={() => router.push("/discover")}>
-          <ArrowLeft aria-hidden="true" size={18} />
-          Discover
-        </button>
-      </header>
+      <AppHeader
+        below={
+          <button className="icon-text-button" type="button" onClick={() => router.push("/dashboard")}>
+            <ArrowLeft aria-hidden="true" size={18} />
+            Dashboard
+          </button>
+        }
+      />
 
       {status ? (
         <section className="project-detail-shell">
