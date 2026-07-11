@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Heart,
+  Plus,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "../components/app-header";
@@ -65,6 +67,7 @@ export function Dashboard() {
   const [student, setStudent] = useState<Student | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   const [form, setForm] = useState<ProjectFormState>(emptyForm);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(
     null,
@@ -139,6 +142,16 @@ export function Dashboard() {
     setForm(emptyForm);
   }
 
+  function toggleProjectForm() {
+    setIsProjectFormOpen((current) => {
+      if (current) {
+        resetForm();
+      }
+
+      return !current;
+    });
+  }
+
   async function submitProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -181,6 +194,7 @@ export function Dashboard() {
         message: data.message ?? "Project saved successfully.",
       });
       resetForm();
+      setIsProjectFormOpen(false);
       await loadProjects(student.id);
     } catch (error) {
       setStatus({
@@ -229,13 +243,24 @@ export function Dashboard() {
         </div>
       </section>
 
-      <section className="projects-layout" aria-labelledby="projects-title">
+      <section
+        className={isProjectFormOpen ? "projects-layout" : "projects-layout projects-layout-full"}
+        aria-labelledby="projects-title"
+      >
         <div className="projects-main">
           <div className="section-heading">
             <div>
               <p className="eyebrow dashboard-eyebrow">Projects</p>
               <h2 id="projects-title">Created and contributed work</h2>
             </div>
+            <button className="secondary-button" type="button" onClick={toggleProjectForm}>
+              {isProjectFormOpen ? (
+                <X aria-hidden="true" size={18} />
+              ) : (
+                <Plus aria-hidden="true" size={18} />
+              )}
+              {isProjectFormOpen ? "Close form" : "Add new project"}
+            </button>
           </div>
 
           {status ? (
@@ -284,79 +309,81 @@ export function Dashboard() {
           </div>
         </div>
 
-        <aside className="project-editor" aria-label="Project editor">
-          <h2>Create project</h2>
-          <form className="dashboard-form" onSubmit={submitProject}>
-            <label>
-              Title
-              <input
-                value={form.title}
-                onChange={(event) => updateField("title", event.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Description
-              <textarea
-                value={form.description}
-                onChange={(event) => updateField("description", event.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Technologies used
-              <input
-                value={form.technologiesUsed}
-                onChange={(event) => updateField("technologiesUsed", event.target.value)}
-                placeholder="Next.js, NestJS, PostgreSQL"
-              />
-            </label>
-            <label>
-              Team members
-              <input
-                value={form.teamMembers}
-                onChange={(event) => updateField("teamMembers", event.target.value)}
-                placeholder="Name, Name"
-              />
-            </label>
-            <label>
-              Images
-              <textarea
-                value={form.images}
-                onChange={(event) => updateField("images", event.target.value)}
-                placeholder="One image URL per line"
-              />
-            </label>
-            <label>
-              Videos
-              <textarea
-                value={form.videos}
-                onChange={(event) => updateField("videos", event.target.value)}
-                placeholder="One video URL per line"
-              />
-            </label>
-            <label>
-              Documentation
-              <textarea
-                value={form.documentation}
-                onChange={(event) => updateField("documentation", event.target.value)}
-                placeholder="Report | https://example.com/report"
-              />
-            </label>
-            <label>
-              External links
-              <textarea
-                value={form.externalLinks}
-                onChange={(event) => updateField("externalLinks", event.target.value)}
-                placeholder="GitHub | https://github.com/user/repo"
-              />
-            </label>
+        {isProjectFormOpen ? (
+          <aside className="project-editor" aria-label="Project editor">
+            <h2>Create project</h2>
+            <form className="dashboard-form" onSubmit={submitProject}>
+              <label>
+                Title
+                <input
+                  value={form.title}
+                  onChange={(event) => updateField("title", event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Description
+                <textarea
+                  value={form.description}
+                  onChange={(event) => updateField("description", event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Technologies used
+                <input
+                  value={form.technologiesUsed}
+                  onChange={(event) => updateField("technologiesUsed", event.target.value)}
+                  placeholder="Next.js, NestJS, PostgreSQL"
+                />
+              </label>
+              <label>
+                Team members
+                <input
+                  value={form.teamMembers}
+                  onChange={(event) => updateField("teamMembers", event.target.value)}
+                  placeholder="Name, Name"
+                />
+              </label>
+              <label>
+                Images
+                <textarea
+                  value={form.images}
+                  onChange={(event) => updateField("images", event.target.value)}
+                  placeholder="One image URL per line"
+                />
+              </label>
+              <label>
+                Videos
+                <textarea
+                  value={form.videos}
+                  onChange={(event) => updateField("videos", event.target.value)}
+                  placeholder="One video URL per line"
+                />
+              </label>
+              <label>
+                Documentation
+                <textarea
+                  value={form.documentation}
+                  onChange={(event) => updateField("documentation", event.target.value)}
+                  placeholder="Report | https://example.com/report"
+                />
+              </label>
+              <label>
+                External links
+                <textarea
+                  value={form.externalLinks}
+                  onChange={(event) => updateField("externalLinks", event.target.value)}
+                  placeholder="GitHub | https://github.com/user/repo"
+                />
+              </label>
 
-            <button className="primary-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Create project"}
-            </button>
-          </form>
-        </aside>
+              <button className="primary-button" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Create project"}
+              </button>
+            </form>
+          </aside>
+        ) : null}
       </section>
     </main>
   );

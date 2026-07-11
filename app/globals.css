@@ -641,6 +641,10 @@ textarea {
   align-items: start;
 }
 
+.projects-layout-full {
+  grid-template-columns: 1fr;
+}
+
 .projects-main,
 .project-editor,
 .project-details {
