@@ -17,7 +17,11 @@ async function bootstrap() {
     .filter(Boolean);
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: [
+      'http://projectsphere-production.up.railway.app', // Replace with your production frontend URL
+      'http://localhost:8080'             // Keep for local testing if needed
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
   app.setGlobalPrefix("api");
