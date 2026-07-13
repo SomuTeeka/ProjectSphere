@@ -10,7 +10,7 @@ async function bootstrap() {
   const allowedOrigins = config
     .get<string>(
       "FRONTEND_ORIGIN",
-      "http://projectsphere-production.up.railway.app:3000,http://localhost:3000",
+      "http://projectsphere-production.up.railway.app:8080,http://localhost:8080",
     )
     .split(",")
     .map((origin) => origin.trim())
