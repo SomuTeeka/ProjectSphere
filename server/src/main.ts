@@ -11,6 +11,7 @@ async function bootstrap() {
     .get<string>(
       "FRONTEND_ORIGIN",
       "http://127.0.0.1:3001,http://localhost:3001",
+      "https://0.0.0.0:8080"
     )
     .split(",")
     .map((origin) => origin.trim())
