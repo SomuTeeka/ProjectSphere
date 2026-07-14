@@ -10,20 +10,17 @@ async function bootstrap() {
   const allowedOrigins = config
     .get<string>(
       "FRONTEND_ORIGIN",
-      "http://projectsphere-production.up.railway.app:8080,http://localhost:8080",
+      "http://127.0.0.1:3001,http://localhost:3001",
     )
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
 
   app.enableCors({
-    origin: [
-      'http://projectsphere-production.up.railway.app', // Replace with your production frontend URL
-      'http://localhost:8080'             // Keep for local testing if needed
-    ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: allowedOrigins,
     credentials: true,
   });
+  
   app.setGlobalPrefix("api");
   app.useGlobalPipes(
     new ValidationPipe({
